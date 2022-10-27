@@ -1,0 +1,163 @@
+#include <Servo.h>
+byte pre_state[10][3] = {
+  {0, 0, 0},
+  {0, 0, 0},
+  {0, 0, 0},
+};
+const int VCAL = 1400; //velocity clock arrow LEFT
+const int VCAR = 1400; //velocity clock arrow RIGHT
+const int VACAR = 1600; //velocity against clock arrow RIGHT
+const int VACAL = 1600; //velocity against clock arrow LEFT
+const int VSL = 1511; //velosity stop left
+const int VSR = 1511; //velosity stop right
+const int LEFTS = 600; // limitation for left sensor
+const int RIGHTS = 600; //limitation for right sensor
+bool control = 1; // control variable, usually 1, during rotating by special function changes to 1
+Servo myservoRIGHT;
+Servo myservoLEFT;
+int med_control = 0;
+int left_control = 0;
+int right_control = 0;
+void setup()
+{
+  pinMode(9, OUTPUT); //infro
+  pinMode(10,OUTPUT); //infroLED left
+  pinMode(6,OUTPUT); //infroLED Mid
+  pinMode(2,OUTPUT); //infroLED right
+  pinMode(11,INPUT);
+  pinMode(7,INPUT);
+  pinMode(3,INPUT);
+  pinMode(13,OUTPUT);//LEFT Servo
+  pinMode(12,OUTPUT); //RIGHT Servo
+  pinMode(A2,INPUT); // RIGHT
+  pinMode(A3,INPUT); // LEFT
+  myservoRIGHT.attach(12); //RIGHT Servo
+  myservoLEFT.attach(13); //LEFT Servo
+  Serial.begin(9600);
+  myservoLEFT.writeMicroseconds(VSL);
+    myservoRIGHT.writeMicroseconds(VSR);
+  Mleft();
+  //forward(10);
+}
+int leftfoto()
+{
+ int coun = 0;
+ for (int i = 0; i<10; i++)
+ {
+ tone(10, 38000, 8); // IRLED 38 kHz for at least 1 ms
+ delay(1); // Wait 1 ms
+ int ir = digitalRead(11); // IR receiver -> ir variable
+ coun = coun + ir;
+ }
+ return coun;
+}
+
+int rightfoto()
+{
+ int coun = 0;
+ for (int i = 0; i<10; i++)
+ {
+ tone(2, 38000, 8); // IRLED 38 kHz for at least 1 ms
+ delay(1); // Wait 1 ms
+ int ir = digitalRead(3); // IR receiver -> ir variable
+ coun = coun + ir;
+ }
+ return coun;
+}
+int midfoto()
+{
+ int coun = 0;
+ for (int i = 0; i<10; i++)
+ {
+ tone(6, 38000, 8); // IRLED 38 kHz for at least 1 ms
+ delay(1); // Wait 1 ms
+ int ir = digitalRead(7); // IR receiver -> ir variable
+ coun = coun + ir;
+ }
+ return coun;
+}
+void Mright (int a)
+{
+    int control = 900;
+    int t1 = millis();
+    int t2 = millis();
+    while (t2 - t1 < control)
+    {
+        myservoLEFT.writeMicroseconds(VCAL);
+        myservoRIGHT.writeMicroseconds(VCAR);
+        t2 = millis();
+    }
+    myservoLEFT.writeMicroseconds(VSL);
+    myservoRIGHT.writeMicroseconds(VSR);
+}
+
+void Mleft ()
+{
+    int control = 900;
+    int t1 = millis();
+    int t2 = millis();
+    while (t2 - t1 < control)
+    {
+     myservoLEFT.writeMicroseconds(VACAL);
+     myservoRIGHT.writeMicroseconds(VACAR);
+     t2 = millis();
+    }
+    myservoLEFT.writeMicroseconds(VSL);
+    myservoRIGHT.writeMicroseconds(VSR);
+}
+
+void backward (int a)
+{
+    int control = a*200;
+    int t1 = millis();
+    int t2 = millis();
+    while (t2 - t1 < control)
+    {
+    myservoLEFT.writeMicroseconds(VCAL);
+    myservoRIGHT.writeMicroseconds(VACAR);
+    t2 = millis();
+    }
+    myservoLEFT.writeMicroseconds(VSL);
+    myservoRIGHT.writeMicroseconds(VSR);
+}
+void forward ()
+{
+    int control = a*200;
+    int t1 = millis();
+    int t2 = millis();
+    while (t2 - t1 < control)
+    {
+    myservoLEFT.writeMicroseconds(VACAL);
+    myservoRIGHT.writeMicroseconds(VCAR);
+    t2 = millis();
+    }
+    myservoLEFT.writeMicroseconds(VSL);
+    myservoRIGHT.writeMicroseconds(VSR);
+}
+void rewrite(int left, int med, int right)
+{
+  for (int i = 0; i < 9; i++)
+  {
+    pre_state[i][0] = pre_state[i+1][0];
+    pre_state[i][1] = pre_state[i+1][1];
+    pre_state[i][2] = pre_state[i+1][2];
+  }
+  pre_state[9][0] = left;
+  pre_state[9][1] = med;
+  pre_state[9][2] = right;
+}
+
+void loop()
+{ 
+  int left = leftfoto();
+  int med = midfoto();
+  int right  = rightfoto();
+  
+  //delay(10);// Wait for 1000 millisecond(s)
+  Serial.print("Left r:");
+  Serial.println(left);
+  Serial.print("Right r:");
+  Serial.println(right);
+  Serial.print("MED  :");
+  Serial.println(med);
+}
