@@ -1,0 +1,46 @@
+ /*Serial.print("Left r:");
+  Serial.println(left);
+  Serial.print("Right r:");
+  Serial.println(right);
+  Serial.print("MED  :");
+  Serial.println(med);*/
+  if ((med > 7) && (med_control == 0)) //standart motion
+  {
+    forward(4);
+    timer = 0;
+  }
+  else
+  {
+    if (timer > 3){
+      Mleft(1);
+      backward(1);
+    }
+    else {
+      while (right > 8)
+      {
+      Mleft(1);
+      Serial.print(right);
+      //forward(5);
+      right = rightfoto();
+      delay(10);
+      }
+      while (left > 8)
+      {
+      Mright(1);
+      //forward(5);
+      left = leftfoto();
+      delay(10);
+      }
+    }
+    
+    timer += 1;
+  }
+    
+  //if ((med < 7) && (right < 4) && (left < 4))
+  //{
+    //Serial.println("pocket");
+    //Mright(170);
+  //}
+  stop_robot();
+  delay(1);
+}
